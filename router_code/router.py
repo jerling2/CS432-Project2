@@ -12,26 +12,47 @@ import sys
 import time
 import os
 import glob
+import traceback
+from threading import Thread
 
 # ---------------------------------------------------------------------------- #
 # ------------------------------- Router Class ------------------------------- #
 
 class Router():
-    """ The router should be able to 
-        1. Open a socket
-        2. Connect to a socket
-        3. read from a csv file 
-        4. write output to a file
-    """
-    def listen(self, port) -> None:
-        """ Open the proxy server so it can be ready to serve."""
-        self.socket = socket(AF_INET, SOCK_STREAM)
-        self.socket.bind(('localhost', port))
-        print(f'router {port - 8000} is listening on {port}')
-        return None
     
+    def open(self, host: str, port: int) -> None:
+        self.socket = socket(AF_INET, SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            self.socket.bind((host, port))
+        except:
+            print("Bind failed. Error : " + str(sys.exc_info()))
+            sys.exit()
+        CONNECTION_QUEUE_SIZE = 2
+        self.socket.listen(CONNECTION_QUEUE_SIZE)
+        print(f'router {port - 8000} is listening on {host}:{port}')
+        return None
+
+    def load_router_table(self, path: str) -> None:
+        table = self.read_csv(path)
+        self.default_gateway_port = self.find_default_gateway(table)
+        self.table = self.generate_forwarding_table_with_range(table)
+        return None
+
+    def on_connect(self):
+        connection, (ip, port) = self.socket.accept()
+        try:
+            client_thread = Thread(target=self.processing_thread, args=(connection, ip, port))
+            client_thread.start()
+        except:
+            print("Thread did not start.")
+            traceback.print_exc()
+
+    def processing_thread(self, connection, ip, port, max_buffer_size=5120):
+        pass
+
     @staticmethod
-    def read_csv(path) -> list:
+    def read_csv(path: str) -> list[list]:
         table_file = open(path, 'r')
         table = table_file.readlines()
         table_list = []
@@ -42,14 +63,13 @@ class Router():
         return table_list
     
     @staticmethod
-    def find_default_gateway(table):
+    def find_default_gateway(table: list[list]) -> str | None:
         for record in table:
             if record[0] == '0.0.0.0':
                 return record[3]
         return None
     
-    def generate_forwarding_table_with_range(self, table):
-        # 1. Create an empty list to store the new forwarding table.
+    def generate_forwarding_table_with_range(self, table: list[list]) -> list[list]:
         new_table = []
         for old_record in table:
             network_dst_bin = self.ip_to_bin(old_record[0])
@@ -59,21 +79,21 @@ class Router():
         return new_table
 
     @staticmethod
-    def ip_to_bin(ip):
+    def ip_to_bin(ip: str) -> bin:
         octlets = list(map(lambda x: bin(int(x))[2:].zfill(8), ip.split('.')))
         return int(''.join(octlets), 2)
     
     @staticmethod
-    def bit_not(n, numbits=32):
+    def bit_not(n: bin, numbits: int = 32) -> bin:
         return (1 << numbits) - 1 - n
     
-    def find_ip_range(self, network_dst: bin, netmask: bin):
+    def find_ip_range(self, network_dst: bin, netmask: bin) -> list[bin, bin]:
         min_ip = network_dst & netmask
         max_ip = min_ip + self.bit_not(netmask)
         return [min_ip, max_ip]
     
     @staticmethod
-    def write_to_file(path, packet_to_write, send_to_router=None):
+    def write_to_file(path: str, packet_to_write: str, send_to_router: str = None) -> None:
         """
         NOTE Valid Paths:
             1. ./output/received_by_router_#.txt
@@ -91,15 +111,30 @@ class Router():
             out_file.write(packet_to_write + " " + "to Router " + send_to_router + "\n")
         out_file.close()
 
-
-# Temporary
-def main():
-    # NOTE: might remove port and path from initilization step
-    router = Router()
-    router.listen(8001)
-    table = router.read_csv("../input/router_1_table.csv")
-    router.find_default_gateway(table)
-    router.generate_forwarding_table_with_range(table)
+    @staticmethod
+    def create_socket(host: str, port: int) -> socket:
+        soc = socket(AF_INET, SOCK_STREAM)
+        try:
+            soc.connect((host, port))
+        except:
+            print("Connection Error to", port)
+            sys.exit()
+        return soc
     
-if __name__ == '__main__':
-    main()
+    @staticmethod
+    def receive_packet(connection: socket, max_buffer_size: int) -> list[list]:
+        """
+        NOTE:
+            packet should look like s"ipsource,ipdestination,payload,TTL"
+        """
+        req = connection.makefile('rb', 0)
+        packet_size = sys.getsizeof(req)
+        if packet_size > max_buffer_size:
+            print("The packet size is greater than expected", packet_size)
+        decoded_packet = req.readline()
+        # TODO:  Append the packet to received_by_router_2.txt.
+        print("received packet", decoded_packet)
+        packet = list(map(lambda x: x.strip(), decoded_packet.split(',')))
+        return packet
+    
+    

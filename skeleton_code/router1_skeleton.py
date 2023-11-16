@@ -7,19 +7,18 @@ import glob
 
 # Helper Functions
 
-# TODO
 # The purpose of this function is to set up a socket connection.
-def create_socket(host, port):
-    # 1. Create a socket.
-    ## soc = ...
-    # 2. Try connecting the socket to the host and port.
-    try:
-        ## ...
-    except:
-        print("Connection Error to", port)
-        sys.exit()
-    # 3. Return the connected socket.
-    return soc
+# def create_socket(host, port):
+#     # 1. Create a socket.
+#     ## soc = ...
+#     # 2. Try connecting the socket to the host and port.
+#     try:
+#         ## ...
+#     except:
+#         print("Connection Error to", port)
+#         sys.exit()
+#     # 3. Return the connected socket.
+#     return soc
 
 # # The purpose of this function is to read in a CSV file.
 # def read_csv(path):
