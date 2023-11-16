@@ -20,9 +20,15 @@ from threading import Thread
 
 class Router():
     
+    def __init__(self) -> None:
+        self.socket = None
+        self.default_gateway_port = None
+        self.table = None
+        self.outgoing = {}
+
     def open(self, host: str, port: int) -> None:
         self.socket = socket(AF_INET, SOCK_STREAM)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         try:
             self.socket.bind((host, port))
         except:
@@ -39,7 +45,7 @@ class Router():
         self.table = self.generate_forwarding_table_with_range(table)
         return None
 
-    def on_connect(self):
+    def on_connect(self) -> None:
         connection, (ip, port) = self.socket.accept()
         try:
             client_thread = Thread(target=self.processing_thread, args=(connection, ip, port))
@@ -47,10 +53,79 @@ class Router():
         except:
             print("Thread did not start.")
             traceback.print_exc()
+        return None
+
+    def connect_to(self, host: str, port: int) -> None:
+        self.outgoing[port] = self.create_socket(host, port)
+        return None
+
+    @staticmethod
+    def create_socket(host: str, port: int) -> socket:
+        soc = socket(AF_INET, SOCK_STREAM)
+        try:
+            soc.connect((host, port))
+        except:
+            print("Connection Error to", port)
+            sys.exit()
+        return soc
 
     def processing_thread(self, connection, ip, port, max_buffer_size=5120):
-        pass
+        # 2. Continuously process incoming packets
+        while True:
+            packet = self.receive_packet(connection, max_buffer_size)
 
+            if packet == ['']:
+                print(f'Connection closed with port {port}')
+                # Empty packet means router 1 has finished sending all packets.
+                break
+
+            src_ip, dst_ip, payload, ttl = tuple(packet)
+            print(src_ip, dst_ip, payload, ttl)
+            # 6. Decrement the TTL by 1 and construct a new packet with the new TTL.
+            ## new_ttl = ...
+            ## new_packet = ...
+
+            # 7. Convert the destination IP into an integer for comparison purposes.
+            ## destinationIP_bin = ...
+            ## destinationIP_int = ...
+
+            # 8. Find the appropriate sending port to forward this new packet to.
+            ## ...
+
+            # 9. If no port is found, then set the sending port to the default port.
+            ## ...
+
+            # 11. Either
+            # (a) send the new packet to the appropriate port (and append it to sent_by_router_2.txt),
+            # (b) append the payload to out_router_2.txt without forwarding because this router is the last hop, or
+            # (c) append the new packet to discarded_by_router_2.txt and do not forward the new packet
+            # ## if ...:
+            #     print("sending packet", new_packet, "to Router 3")
+            #     ## ...
+            # ## elif ...:
+            #     print("sending packet", new_packet, "to Router 4")
+            #     ## ...
+            # ## elif ...:
+            #     print("OUT:", payload)
+            #     ## ...
+            # else:
+            #     print("DISCARD:", new_packet)
+            #     ## ...
+
+    def lpm(self, dest_ip: bin) -> str:
+        # Longest Prefix Match Routing Algorithm
+        port = '0.0.0.0'
+        max_netmax = 0
+        for record in self.table:
+            netmask = record[1]
+            if netmask < max_netmax:
+                continue
+            ip_range = record[0]
+            if dest_ip in range(ip_range[0], ip_range[1]):
+                port = record[3]
+                max_netmax = netmask
+        return port
+    
     @staticmethod
     def read_csv(path: str) -> list[list]:
         table_file = open(path, 'r')
@@ -75,7 +150,7 @@ class Router():
             network_dst_bin = self.ip_to_bin(old_record[0])
             netmask_bin = self.ip_to_bin(old_record[1])
             ip_range = self.find_ip_range(network_dst_bin, netmask_bin)
-            new_table.append([ip_range] + old_record[2:])
+            new_table.append([ip_range] + [netmask_bin] + old_record[2:])
         return new_table
 
     @staticmethod
@@ -110,16 +185,6 @@ class Router():
         else:
             out_file.write(packet_to_write + " " + "to Router " + send_to_router + "\n")
         out_file.close()
-
-    @staticmethod
-    def create_socket(host: str, port: int) -> socket:
-        soc = socket(AF_INET, SOCK_STREAM)
-        try:
-            soc.connect((host, port))
-        except:
-            print("Connection Error to", port)
-            sys.exit()
-        return soc
     
     @staticmethod
     def receive_packet(connection: socket, max_buffer_size: int) -> list[list]:
@@ -131,10 +196,9 @@ class Router():
         packet_size = sys.getsizeof(req)
         if packet_size > max_buffer_size:
             print("The packet size is greater than expected", packet_size)
-        decoded_packet = req.readline()
+        decoded_packet = req.readline().decode('utf-8')
         # TODO:  Append the packet to received_by_router_2.txt.
         print("received packet", decoded_packet)
         packet = list(map(lambda x: x.strip(), decoded_packet.split(',')))
         return packet
-    
     

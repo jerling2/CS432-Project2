@@ -1,11 +1,14 @@
 from router import Router
 
+
 def main():
     router = Router()
-    router.listen(8001)
-    table = router.read_csv("../input/router_1_table.csv")
-    router.find_default_gateway(table)
-    router.generate_forwarding_table_with_range(table)
+    router.open('127.0.0.1', 8001)
+    router.load_router_table('../input/router_1_table.csv')
+    ip_bin = router.ip_to_bin('10.0.0.227')
+    print(router.lpm(ip_bin, '10.0.0.227'))
+
+    # router.connect_to('127.0.0.1', 8002)
 
 
 if __name__ == '__main__':
