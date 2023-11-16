@@ -14,9 +14,6 @@ import os
 import glob
 
 # ---------------------------------------------------------------------------- #
-# ------------------------------ Global Variable ----------------------------- #
-
-# ---------------------------------------------------------------------------- #
 # ------------------------------- Router Class ------------------------------- #
 
 class Router():
@@ -74,7 +71,28 @@ class Router():
         min_ip = network_dst & netmask
         max_ip = min_ip + self.bit_not(netmask)
         return [min_ip, max_ip]
+    
+    @staticmethod
+    def write_to_file(path, packet_to_write, send_to_router=None):
+        """
+        NOTE Valid Paths:
+            1. ./output/received_by_router_#.txt
+            2. ./output/out_router_#.txt
+            3. ./output/discarded_by_router_#.txt
+            4. ./output/out_sent_by_router_router_#.txt
+        NOTE For most cases:
+            * Append the packet to the File
+            * Exception: if sending a packet then do the extra step.
+        """
+        out_file = open(path, "a")
+        if not send_to_router:
+            out_file.write(packet_to_write + "\n")
+        else:
+            out_file.write(packet_to_write + " " + "to Router " + send_to_router + "\n")
+        out_file.close()
 
+
+# Temporary
 def main():
     # NOTE: might remove port and path from initilization step
     router = Router()

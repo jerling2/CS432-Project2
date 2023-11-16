@@ -125,19 +125,19 @@ def create_socket(host, port):
 # def bit_not(n, numbits=32):
 #     return (1 << numbits) - 1 - n
 
-# TODO
-# The purpose of this function is to write packets/payload to file.
-def write_to_file(path, packet_to_write, send_to_router=None):
-    # 1. Open the output file for appending.
-    out_file = open(path, "a")
-    # 2. If this router is not sending, then just append the packet to the output file.
-    ## if ...:
-        out_file.write(packet_to_write + "\n")
-    # 3. Else if this router is sending, then append the intended recipient, along with the packet, to the output file.
-    else:
-        out_file.write(packet_to_write + " " + "to Router " + send_to_router + "\n")
-    # 4. Close the output file.
-    out_file.close()
+# # TODO
+# # The purpose of this function is to write packets/payload to file.
+# def write_to_file(path, packet_to_write, send_to_router=None):
+#     # 1. Open the output file for appending.
+#     out_file = open(path, "a")
+#     # 2. If this router is not sending, then just append the packet to the output file.
+#     ## if ...:
+#         out_file.write(packet_to_write + "\n")
+#     # 3. Else if this router is sending, then append the intended recipient, along with the packet, to the output file.
+#     else:
+#         out_file.write(packet_to_write + " " + "to Router " + send_to_router + "\n")
+#     # 4. Close the output file.
+#     out_file.close()
 
 
 # Main Program
