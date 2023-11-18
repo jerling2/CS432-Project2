@@ -111,10 +111,10 @@ class Router():
         """
         Description:
             Try to create a socket connection given a host and port.
-        :Params:
+        :params:
             host (str): the ip of the server's socket in the pattern 'a.b.c.d'.
             port (int): the port of the server's socket.
-        :Return:
+        :return:
             soc (socket): the connection with the server's socket.
         """
         soc = socket(AF_INET, SOCK_STREAM)
