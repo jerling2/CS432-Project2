@@ -13,6 +13,15 @@ import traceback
 from threading import Thread
 
 # ---------------------------------------------------------------------------- #
+# ------------------------------ Global Variable ----------------------------- #
+
+REC_PATH = './output/received_by_router_'
+OUT_PATH = './output/out_router_'
+DIS_PATH = './output/discarded_by_router_'
+SNT_PATH = './output/sent_by_router_'
+EXT = '.txt'
+
+# ---------------------------------------------------------------------------- #
 # ------------------------------- Router Class ------------------------------- #
 
 class Router():
@@ -20,7 +29,7 @@ class Router():
     def __init__(self, host: str, port: int) -> None:
         self.host = host
         self.port = port
-        self.name = port - 8000
+        self.name = str(port - 8000)
         self.socket = None
         self.default_gateway_port = None
         self.table = None
@@ -59,7 +68,7 @@ class Router():
 
     def connect_to(self, host: str, port: str, handshake_message:str) -> None:
         self.outgoing[port] = self.create_socket(host, int(port))
-        self.rt_names[port] = int(port) - 8000
+        self.rt_names[port] = str(int(port) - 8000)
         handshake_message = f'{self.host},{self.port},' + handshake_message
         self.outgoing[port].send(handshake_message.encode('utf-8') + b'\n')
         return None
@@ -93,27 +102,26 @@ class Router():
             if packet == ['']:
                 print(f'Connection with port {port} closed')
                 break
-            # TODO: Append received packet from # here.
+            self.write_to_file(REC_PATH + self.name + EXT, ','.join(packet))
             src_ip, dst_ip, payload, ttl = tuple(packet)
             ttl = int(ttl) - 1
             port = self.lpm(self.ip_to_bin(dst_ip))
             new_packet = f'{src_ip},{dst_ip},{payload},{ttl}'
             if port == '127.0.0.1':
+                self.write_to_file(OUT_PATH + self.name + EXT, payload)
                 print(f'packet accepted!')
             elif ttl == 0:
+                self.write_to_file(DIS_PATH + self.name + EXT, new_packet)
                 print(f'packet from Router {self.rt_names[port]} discarded')
             else:
+                self.write_to_file(SNT_PATH + self.name + EXT, new_packet, self.rt_names[port])
                 print(f'sending packet to Router {self.rt_names[port]}')
                 self.send_packet(self.outgoing[port], new_packet)
     
     def send_packet(self, connection: socket, packet: str) -> None:
-        try:
-            socket_file = connection.makefile('wb')
-            socket_file.write(packet.encode('utf-8'))
-            socket_file.write('\n'.encode('utf-8'))
-        except:
-            pass
-        return None
+        socket_file = connection.makefile('wb')
+        socket_file.write(packet.encode('utf-8'))
+        socket_file.write('\n'.encode('utf-8'))
 
     def lpm(self, dest_ip: bin) -> str:
         # Longest Prefix Match Routing Algorithm
