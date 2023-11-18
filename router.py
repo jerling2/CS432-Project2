@@ -50,6 +50,10 @@ class Router():
         self.rt_names = {}
 
     def open(self) -> None:
+        """ 
+        Description:
+            Try to bind the router's socket to a host and port.
+        """
         self.socket = socket(AF_INET, SOCK_STREAM)
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         try:
@@ -66,6 +70,12 @@ class Router():
     # ------------------------- #
 
     def on_connect(self) -> None:
+        """
+        Description:
+            Wait for a connection, then send a handshake after establishing a
+            connection. Handle the client connection in a new thread, which
+            will allow the router to accept more connections.
+        """
         connection, (ip, port) = self.socket.accept()
         self.handshake(connection)
         try:
@@ -98,6 +108,15 @@ class Router():
     
     @staticmethod
     def create_socket(host: str, port: int) -> socket:
+        """
+        Description:
+            Try to create a socket connection given a host and port.
+        :Params:
+            host (str): the ip of the server's socket in the pattern 'a.b.c.d'.
+            port (int): the port of the server's socket.
+        :Return:
+            soc (socket): the connection with the server's socket.
+        """
         soc = socket(AF_INET, SOCK_STREAM)
         try:
             soc.connect((host, port))
