@@ -2,16 +2,16 @@
 
 """
 
-# ---------------------------------------------------------------------------- #
-# ------------------------- Standard Library Imports ------------------------- #
+# ----------------------------------------------------------------------------------------------- #
+# ----------------------------------- Standard Library Imports ---------------------------------- #
 
 from socket import *
 import sys
 import traceback
 from threading import Thread
 
-# ---------------------------------------------------------------------------- #
-# ----------------------------- Global Variables ----------------------------- #
+# ----------------------------------------------------------------------------------------------- #
+# --------------------------------------- Global Variables -------------------------------------- #
 
 REC_PATH = './output/received_by_router_'
 OUT_PATH = './output/out_router_'
@@ -19,17 +19,32 @@ DIS_PATH = './output/discarded_by_router_'
 SNT_PATH = './output/sent_by_router_'
 EXT = '.txt'
 
-# ---------------------------------------------------------------------------- #
-# ------------------------------- Router Class ------------------------------- #
-
+# ----------------------------------------------------------------------------------------------- #
+# ----------------------------------------- Router Class ---------------------------------------- #
 class Router():
-    
+    """
+    Description:
+        The Router Class defines how router objects handle:
+            1.) other client-router connections
+            2.) and the flow of packets.
+    Usuage: 
+        Run each router object in its own process. Specify the routing table for the router in the
+        input directory. Connect client routers to server-routers by evoking connect_to(). Server
+        routers automatically connect to client routers due to a handshake protocol. Adding packets
+        to the network is the responsibility of the programmer's independent implementation.
+    Class Instance Variables:
+        self.host (str): the ip of the router's socket in the pattern 'a.b.c.d'.
+        self.port (int): the port of the router's socket.
+        self.name (str): the name of this router - provides flavor to messages.
+        self.socket (socket): the router's socket.
+        self.outgoing (dict, key = port <str>): contains the connections of connected routers.
+        self.rt_names (dict, key = port <str>): contains the names of connected routers.
+    """
     def __init__(self, host: str, port: int) -> None:
         self.host = host
         self.port = port
-        self.name = str(port - 8000)
+        self.name = str(port - 8000) # < based on our specific router topology
         self.socket = None
-        self.default_gateway_port = None
         self.table = None
         self.outgoing = {}
         self.rt_names = {}
@@ -99,7 +114,6 @@ class Router():
         while True:
             packet = self.receive_packet(connection, max_buffer_size)
             if packet == ['']:
-                print(f'Connection with port {port} closed')
                 break
             self.append_packet_to_received_file(packet)
             src_ip, dst_ip, payload, ttl = tuple(packet)
@@ -144,7 +158,6 @@ class Router():
 
     def load_router_table(self, path: str) -> None:
         table = self.read_csv(path)
-        self.default_gateway_port = self.find_default_gateway(table)
         self.table = self.generate_forwarding_table_with_range(table)
         return None
 
@@ -179,13 +192,6 @@ class Router():
         min_ip = network_dst & netmask
         max_ip = min_ip + self.bit_not(netmask)
         return [min_ip, max_ip]
-    
-    @staticmethod
-    def find_default_gateway(table: list[list]) -> str | None:
-        for record in table:
-            if record[0] == '0.0.0.0':
-                return record[3]
-        return None
 
     @staticmethod
     def ip_to_bin(ip: str) -> bin:

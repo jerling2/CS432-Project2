@@ -33,7 +33,7 @@ from router import Router
 # --------------------------------------------------------------------------- #
 # --------------------------------- Settings -------------------------------- #
 
-SECONDS_BETWEEN_PACKETS = 1
+SECONDS_BETWEEN_PACKETS = 0.1
 DELETE_FILES_WHEN_FINISHED = True
 SECONDS_BEFORE_FILES_DELETED = 5
 
@@ -86,7 +86,7 @@ def main():
         files = glob.glob('./output/*')
         for f in files:
             os.remove(f)
-
+    ROUTER.socket.close()
 
 if __name__ == '__main__':
     main()
