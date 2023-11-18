@@ -11,7 +11,7 @@ import traceback
 from threading import Thread
 
 # ---------------------------------------------------------------------------- #
-# ------------------------------ Global Variable ----------------------------- #
+# ----------------------------- Global Variables ----------------------------- #
 
 REC_PATH = './output/received_by_router_'
 OUT_PATH = './output/out_router_'

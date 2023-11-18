@@ -1,14 +1,51 @@
+################################################################################
+###~- ROUTER 1 -~#~- ROUTER 1 -~#~- ROUTER 1 -~#~- ROUTER 1 -~#~- ROUTER 1 -~###
+################################################################################
+# ---------------------------------------------------------------------------- #
+# ---------------------- Router Network Topology Diagram --------------------- #
+#                                 ┌┄┄┄┐              ┌┄┄┄┐                     #
+#                          ◁ 8002 | 2 | d ▷┄┄┄◁ 8003 | 3 |                     #
+#                        ╱        └┄┄┄┘              └┄┄┄┘                     #
+#                       △           c                                          #
+#                       a           ▽                                          #
+#                     ┌▀▀▀┐         ┊                                          #
+#                8001 |*1*|         ┊                                          #
+#                     └▄▄▄┘         ┊                                          #
+#                       b           △                                          #
+#                       ▽  	       8004                                        #
+#                        ╲        ┌┄┄┄┐              ┌┄┄┄┐                     #
+#                          ◁ 8004 | 4 | e ▷┄┄┄◁ 8005 | 5 |                     #
+#                                 └┄┄┄┘              └┄┄┄┘                     #
+#                                   f                                          #
+#                                   ▽                                          #
+#                                    ╲               ┌┄┄┄┐                     #
+#                                      ┄┄┄┄┄┄ ◁ 8006 | 6 |                     #
+#                                                    └┄┄┄┘                     #
+# ---------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------- #
+# ----------------- Standard Library Imports + Router Import ----------------- #
+
 import time
 import os
 import glob
-from router import Router, REC_PATH, OUT_PATH, DIS_PATH, SNT_PATH, EXT
+from router import Router
 
+# --------------------------------------------------------------------------- #
+# --------------------------------- Settings -------------------------------- #
+
+SECONDS_BETWEEN_PACKETS = 1
+DELETE_FILES_WHEN_FINISHED = True
+SECONDS_BEFORE_FILES_DELETED = 5
+
+# --------------------------------------------------------------------------- #
+# ------------------------ Special Router 1 Functions ----------------------- #
 
 def read_packet_file(path):
     packet_file = open(path, 'r')
     packet_list = [p.strip() for p in packet_file.readlines()]
     packet_file.close()
     return packet_list
+
 
 def proccess_packet(encoded_packet) -> None:
     packet = list(map(lambda x: x.strip(), encoded_packet.split(',')))
@@ -29,6 +66,9 @@ def proccess_packet(encoded_packet) -> None:
         ROUTER.send_packet(ROUTER.outgoing[port], new_packet)
     return None
 
+# ---------------------------------------------------------------------------- #
+# -------------------------------- Main Driver ------------------------------- #
+
 def main():
     global ROUTER 
     ROUTER = Router('127.0.0.1', 8001)
@@ -39,12 +79,13 @@ def main():
     packet_list = read_packet_file('./input/packets.csv')
     for packet in packet_list:
         proccess_packet(packet)
-        time.sleep(0.1)
+        time.sleep(SECONDS_BETWEEN_PACKETS)
     # Wait 5 seconds before deleting files in the output directory.
-    time.sleep(5)
-    files = glob.glob('./output/*')
-    for f in files:
-        os.remove(f)
+    if DELETE_FILES_WHEN_FINISHED:
+        time.sleep(SECONDS_BEFORE_FILES_DELETED)
+        files = glob.glob('./output/*')
+        for f in files:
+            os.remove(f)
 
 
 if __name__ == '__main__':
