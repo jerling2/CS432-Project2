@@ -10,39 +10,24 @@ def read_packet_file(path):
     packet_file.close()
     return packet_list
 
-
-# def proccess_packet(encoded_packet):
-#     packet = list(map(lambda x: x.strip(), encoded_packet.split(',')))
-#     src_ip, dst_ip, payload, ttl = tuple(packet)
-#     ttl = int(ttl) - 1
-#     port = ROUTER.lpm(ROUTER.ip_to_bin(dst_ip))
-#     new_packet = f'{src_ip},{dst_ip},{payload},{ttl}'
-#     if port == '127.0.0.1':
-#         print(f'packet accepted!')
-#     elif ttl == 0:
-#         print(f'packet from Router {ROUTER.rt_names[port]} discarded')
-#     else:
-#         print(f'sending packet to Router {ROUTER.rt_names[port]}')
-#         ROUTER.send_packet(ROUTER.outgoing[port], new_packet)
-
-
-def proccess_packet(encoded_packet):
+def proccess_packet(encoded_packet) -> None:
     packet = list(map(lambda x: x.strip(), encoded_packet.split(',')))
-    ROUTER.write_to_file(REC_PATH + ROUTER.name + EXT, ','.join(packet))
+    ROUTER.append_packet_to_received_file(packet)
     src_ip, dst_ip, payload, ttl = tuple(packet)
     # ttl = int(ttl) - 1
     port = ROUTER.lpm(ROUTER.ip_to_bin(dst_ip))
     new_packet = f'{src_ip},{dst_ip},{payload},{ttl}'
     if port == '127.0.0.1':
-        ROUTER.write_to_file(OUT_PATH + ROUTER.name + EXT, payload)
+        ROUTER.append_payload_to_out_file(payload)
         print(f'packet accepted!')
     elif ttl == 0:
-        ROUTER.write_to_file(DIS_PATH + ROUTER.name + EXT, new_packet)
+        ROUTER.append_packet_to_discard_file(new_packet)
         print(f'packet from Router {ROUTER.rt_names[port]} discarded')
     else:
-        ROUTER.write_to_file(SNT_PATH + ROUTER.name + EXT, new_packet, ROUTER.rt_names[port])
+        ROUTER.append_packet_to_sent_file(new_packet, ROUTER.rt_names[port])
         print(f'sending packet to Router {ROUTER.rt_names[port]}')
         ROUTER.send_packet(ROUTER.outgoing[port], new_packet)
+    return None
 
 def main():
     global ROUTER 
@@ -55,10 +40,12 @@ def main():
     for packet in packet_list:
         proccess_packet(packet)
         time.sleep(0.1)
+    # Wait 5 seconds before deleting files in the output directory.
+    time.sleep(5)
+    files = glob.glob('./output/*')
+    for f in files:
+        os.remove(f)
 
-    # files = glob.glob('./output/*')
-    # for f in files:
-    #     os.remove(f)
 
 if __name__ == '__main__':
     main()
