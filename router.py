@@ -87,6 +87,22 @@ class Router():
         return None
 
     def connect_to(self, host: str, port: str, handshake_message:str) -> None:
+        """
+        Description:
+            Establish a connection to a router given a host and port. Store the
+            connection in the outgoing dict, and store the name of the router
+            in the rt_names dict. Then send a handshake to the connection in
+            the form: 'host,port,message'.
+        Example Usuage:
+            ROUTER.connect_to('127.0.0.1', '8002', 'a')
+        Explaination of the Above Example:
+            Connect this router to router 2, and tell router 2 to remember this
+            connection as port 'a'.
+        :param:
+            host (str): the ip of the server's socket in the pattern 'a.b.c.d'.
+            port (str): the port of the server's socket. Note, this is a string.
+            handshake_message (str): the handshake message sent to the server.
+        """
         self.outgoing[port] = self.create_socket(host, int(port))
         self.rt_names[port] = str(int(port) - 8000)
         handshake_message = f'{self.host},{self.port},' + handshake_message
@@ -94,8 +110,23 @@ class Router():
         return None
 
     def handshake(self, connection: socket) -> None:
-        handshake_msg = connection.recv(1024).decode('utf-8')
-        handshake_list = list(map(lambda x: x.strip(), handshake_msg.split(',')))
+        """
+        Description:
+            Receive a handshake and split the string into three fields: host, 
+            port, and message. If the message says 'it is nice to meet you',
+            then this router is a client that is already connected to the
+            server - thus, the handshake can end. Otherwise, the message is a
+            variable (i.e. 'a', 'b', 'e', etc.) and this router is a server. As
+            such, connect to the client with the host and port given in the
+            handshake. Then, store the connection in the outgoing dict where
+            the port is equal to a variable (i.e. key = 'a', 'b', 'e', ect.)
+            and store the name in the rt_names where again the port is equal to
+            a variable.
+        :param:
+            connection (socket): the socket from either the client or server.
+        """
+        handshake_data = connection.recv(1024).decode('utf-8')
+        handshake_list = list(map(lambda x: x.strip(), handshake_data.split(',')))
         host, port = handshake_list[0], handshake_list[1]
         handshake_msg = handshake_list[2]
         if handshake_msg == 'it is nice to meet you':
