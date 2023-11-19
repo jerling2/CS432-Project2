@@ -12,7 +12,7 @@
 #                8001 |*1*|         ┊                                          #
 #                     └▄▄▄┘         ┊                                          #
 #                       b           △                                          #
-#                       ▽  	       8004                                        #
+#                       ▽          8004                                        #
 #                        ╲        ┌┄┄┄┐              ┌┄┄┄┐                     #
 #                          ◁ 8004 | 4 | e ▷┄┄┄◁ 8005 | 5 |                     #
 #                                 └┄┄┄┘              └┄┄┄┘                     #
@@ -40,7 +40,16 @@ SECONDS_BEFORE_FILES_DELETED = 5
 # --------------------------------------------------------------------------- #
 # ------------------------ Special Router 1 Functions ----------------------- #
 
-def read_packet_file(path):
+def read_packet_file(path: str) -> list[str]:
+    """
+    Description:
+        Extract each packet/line from the packets.csv file
+        and save it into packets_list.
+    :param:
+        path (str): path to packets.csv
+    :return:
+        packet_list (list[str]): list of packet strings.
+    """
     packet_file = open(path, 'r')
     packet_list = [p.strip() for p in packet_file.readlines()]
     packet_file.close()
@@ -48,6 +57,17 @@ def read_packet_file(path):
 
 
 def proccess_packet(encoded_packet) -> None:
+    """
+    Description: Router 1's process_packet function is *almost* identical
+    to the process_thread function in the Router class. The differences
+    are:
+        1. Router 1 does not wait to receive a packet because it has all the
+        packets in the packets.csv file.
+        2. Router 1 does not append packets to a "received_by_router_1" file.
+    Also note:
+        list(map(lambda x: x.strip(), encoded_packet.split(','))) turns a 
+        packet string into list of the form: [src_ip, dst_ip, payload, ttl].
+    """
     packet = list(map(lambda x: x.strip(), encoded_packet.split(',')))
     src_ip, dst_ip, payload, ttl = tuple(packet)
     ttl = int(ttl) - 1
@@ -79,7 +99,6 @@ def main():
     for packet in packet_list:
         proccess_packet(packet)
         time.sleep(SECONDS_BETWEEN_PACKETS)
-    # Wait 5 seconds before deleting files in the output directory.
     if DELETE_FILES_WHEN_FINISHED:
         time.sleep(SECONDS_BEFORE_FILES_DELETED)
         files = glob.glob('./output/*')
