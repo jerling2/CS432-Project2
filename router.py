@@ -41,6 +41,18 @@ class Router():
         self.socket (socket): the router's socket.
         self.outgoing (dict, key = port <str>): contains the connections of connected routers.
         self.rt_names (dict, key = port <str>): contains the names of connected routers.
+    List of Encouraged "Public" Methods:
+        open
+        on_connect
+        connect_to
+        load_router_table
+    Extra List of Encouraged "Public" Methods for Router 1:
+        ip_to_bin
+        lpm
+        send_packet
+        append_payload_to_out_file
+        append_packet_to_discard_file
+        append_packet_to_sent_file
     """
     def __init__(self, host: str, port: int) -> None:
         self.host = host
@@ -70,7 +82,7 @@ class Router():
     # ------------------------- #
     # Socket Connection Methods #
     # ------------------------- #
-
+ 
     def on_connect(self) -> None:
         """
         Description:
