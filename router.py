@@ -1,5 +1,7 @@
 """
-
+    Title: Router
+    Brief: A python file that contains the Router class.
+    Author: Joseph Erlinger.
 """
 
 # ----------------------------------------------------------------------------------------------- #
@@ -355,6 +357,15 @@ class Router():
 
     @staticmethod
     def write_to_file(path: str, packet_to_write: str, send_to_router: str = None) -> None:
+        """
+        Description:
+            When a router receives, discards, accepts, or sends a packet, then append
+            some data to a specified file path.
+        :params:
+            path (str): REC/OUT/DIS/SNT_PATH + router's # + 'txt'.
+            packet_to_write (str): packet in form of 'ip_src,ip_dst,payload,ttl' or just 'payload'.
+            send_to_router (str): the name of the router that is being sent a packet.
+        """
         out_file = open(path, "a")
         if not send_to_router:
             out_file.write(packet_to_write + "\n")
@@ -364,18 +375,22 @@ class Router():
         return None
 
     def append_packet_to_received_file(self, packet_to_write: list) -> None:
+        """ wrapper function to improve readability in processing_thread """
         self.write_to_file(REC_PATH + self.name + EXT, ','.join(packet_to_write))
         return None
     
     def append_payload_to_out_file(self, payload_to_write: str) -> None:
+        """ wrapper function to improve readability in processing_thread """
         self.write_to_file(OUT_PATH + self.name + EXT, payload_to_write)
         return None
     
     def append_packet_to_discard_file(self, packet_to_write: str) -> None:
+        """ wrapper function to improve readability in processing_thread """
         self.write_to_file(DIS_PATH + self.name + EXT, packet_to_write)
         return None
     
     def append_packet_to_sent_file(self, packet_to_write, send_to_router) -> None:
+        """ wrapper function to improve readability in processing_thread """
         self.write_to_file(SNT_PATH + self.name + EXT, packet_to_write, send_to_router)
         return None
     
