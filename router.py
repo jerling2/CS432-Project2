@@ -79,7 +79,7 @@ class Router():
         connection, (ip, port) = self.socket.accept()
         self.handshake(connection)
         try:
-            client_thread = Thread(target=self.processing_thread, args=(connection, port))
+            client_thread = Thread(target=self.processing_thread, args=(connection,))
             client_thread.start()
         except:
             print("Thread did not start.")
@@ -160,16 +160,27 @@ class Router():
     # The Main Routing Algorithm #
     # -------------------------- #
 
-    def processing_thread(self, connection: socket, port: str, max_buffer_size=5120) -> None:
+    def processing_thread(self, connection: socket, max_buffer_size=5120) -> None:
+        """
+        Description:
+            Receive a stream of packets. Each packet is proccessed by receive_packet. Decrement TTL
+            by 1 and construct a new packet with the new TTL. Get outgoing port by using lpm
+            (longest prefix matching). If the outgoing port is '127.0.0.1', then the packet is
+            'accepted' and appended to the out file. Else, if the ttl = 0, then the packet is
+            discarded and appended to the discarded file. Otherwise, the new packet is forwarded to
+            the next hop router given by the outgoing dict (where key = port given by lpm). 
+        :param:
+            connection (socket): connection with the client socket.
+        """
         while True:
             packet = self.receive_packet(connection, max_buffer_size)
-            if packet == ['']:
+            if packet == ['']:  # < connection closed
                 break
             self.append_packet_to_received_file(packet)
             src_ip, dst_ip, payload, ttl = tuple(packet)
             ttl = int(ttl) - 1
-            port = self.lpm(self.ip_to_bin(dst_ip))
             new_packet = f'{src_ip},{dst_ip},{payload},{ttl}'
+            port = self.lpm(self.ip_to_bin(dst_ip))
             if port == '127.0.0.1':
                 self.append_payload_to_out_file(payload)
                 print(f'packet accepted!')
