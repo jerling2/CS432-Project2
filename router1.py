@@ -49,7 +49,6 @@ def read_packet_file(path):
 
 def proccess_packet(encoded_packet) -> None:
     packet = list(map(lambda x: x.strip(), encoded_packet.split(',')))
-    ROUTER.append_packet_to_received_file(packet)
     src_ip, dst_ip, payload, ttl = tuple(packet)
     ttl = int(ttl) - 1
     port = ROUTER.lpm(ROUTER.ip_to_bin(dst_ip))
