@@ -22,4 +22,10 @@ python3 router2.py
 ```bash
 python3 router1.py
 ```
+### Advanced Settings In `router1.py`
 
+SECONDS_BETWEEN_PACKETS = 1 (default)
+
+DELETE_FILES_WHEN_FINISHED = False (default)
+
+SECONDS_BEFORE_FILES_DELETED = 5 (default)
