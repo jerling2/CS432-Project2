@@ -232,7 +232,6 @@ class Router():
             print("The packet size is greater than expected", packet_size)
         decoded_packet = req.readline().decode('utf-8')
         packet = list(map(lambda x: x.strip(), decoded_packet.split(',')))
-        print(packet)
         return packet
     
     # --------------------------- #
