@@ -1,6 +1,6 @@
 """
     Title: Router
-    Brief: A python file that contains the Router class.
+    Brief: A Python file that contains the Router class.
     Author: Joseph Erlinger.
 """
 
