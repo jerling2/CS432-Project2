@@ -265,17 +265,33 @@ class Router():
         return new_table
 
     def lpm(self, dest_ip: bin) -> str:
-        # Longest Prefix Match Routing Algorithm
-        port = '0.0.0.0'
-        max_netmax = 0
+        """
+        Description:
+            Longest Prefix Matching routing algorithm. Start with port = undefined, and the
+            longest_netmask_length = 0. Iterate through this router's forwarding table. If the
+            current netmask is shorter than the longest_netmask_length, then simply skip the 
+            record. Otherwise, if the destination ip is within the ip range of the record, then 
+            the port is equal to the record's interface/port and the new longest_netmask_length 
+            = current netmask. At the end of the algorithm, return the 'longest prefix matched'
+            port/interface.
+        Note:
+            It is gaurenteed that lpm returns a port if a default interface is defined in the
+            router's forwarding table 
+        :param:
+            dest_ip (bin): the destination ip of a packet.
+        :return:
+            port (str): the outgoing port/interface of which to send that packet through.
+        """
+        port = None
+        longest_netmask_length = 0
         for record in self.table:
             netmask = record[1]
-            if netmask < max_netmax:
+            if netmask < longest_netmask_length:
                 continue
             ip_range = record[0]
             if dest_ip in range(ip_range[0], ip_range[1]):
                 port = record[3]
-                max_netmax = netmask
+                longest_netmask_length = netmask
         return port
 
     # -------------------------------- #
@@ -283,12 +299,27 @@ class Router():
     # -------------------------------- #
 
     def find_ip_range(self, network_dst: bin, netmask: bin) -> list[bin, bin]:
-        min_ip = network_dst & netmask
-        max_ip = min_ip + self.bit_not(netmask)
+        """ Straightforward process of getting the ip range """
+        min_ip = network_dst & netmask 
+        possible_number_of_hosts_in_range = self.bit_not(netmask)
+        max_ip = min_ip + possible_number_of_hosts_in_range
         return [min_ip, max_ip]
 
     @staticmethod
     def ip_to_bin(ip: str) -> bin:
+        """
+        Convert an ip into a binary number with the following steps:
+            1. split the string on '.'s
+            2. convert each string octlet into an integer then into binary.
+            3. remove the 0b that python places infront of a binary number string.
+            4. fill in zeros to the right so that each octlets length is 8.
+            5. join the list of octlets into a string.
+            6. tell python to intepret the string as an binary integer.
+        :param:
+            ip (str): an ip address in the form of 'a.b.c.d'
+        :return:
+            ip_bin (bin): binary reprsentation of 'a.b.c.d'
+        """
         octlets = list(map(lambda x: bin(int(x))[2:].zfill(8), ip.split('.')))
         return int(''.join(octlets), 2)
     
