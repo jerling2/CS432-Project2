@@ -166,9 +166,10 @@ class Router():
             Receive a stream of packets. Each packet is proccessed by receive_packet. Decrement TTL
             by 1 and construct a new packet with the new TTL. Get outgoing port by using lpm
             (longest prefix matching). If the outgoing port is '127.0.0.1', then the packet is
-            'accepted' and appended to the out file. Else, if the ttl = 0, then the packet is
-            discarded and appended to the discarded file. Otherwise, the new packet is forwarded to
-            the next hop router given by the outgoing dict (where key = port given by lpm). 
+            'accepted' and appended to the out file. Else, if the ttl = 0, then the new packet is
+            discarded and appended to the discard file. Otherwise, the new packet is forwarded to
+            the next hop router given by the outgoing dict (where key = port given by lpm) and the
+            new packet is appended to the sent file. 
         :param:
             connection (socket): connection with the client socket.
         """
