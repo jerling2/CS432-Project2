@@ -64,6 +64,7 @@ def proccess_packet(encoded_packet) -> None:
         1. Router 1 does not wait to receive a packet because it has all the
         packets in the packets.csv file.
         2. Router 1 does not append packets to a "received_by_router_1" file.
+        3. Router 1 does not return early if it received an 'empty' packet.
     Also note:
         list(map(lambda x: x.strip(), encoded_packet.split(','))) turns a 
         packet string into list of the form: [src_ip, dst_ip, payload, ttl].
