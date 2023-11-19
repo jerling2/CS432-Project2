@@ -199,19 +199,38 @@ class Router():
     # ----------------- #
 
     def send_packet(self, connection: socket, packet: str) -> None:
+        """
+        Description:
+            Send a packet to the server's connection, and send a newline
+            character to indicate the end of the message.
+        :param:
+            connection (socket): connection with the server's socket.
+            packet (str): packet in form of 'ip_src,ip_dst,payload,ttl'.
+        """
         socket_file = connection.makefile('wb')
         socket_file.write(packet.encode('utf-8'))
         socket_file.write('\n'.encode('utf-8'))
         return None
     
     @staticmethod
-    def receive_packet(connection: socket, max_buffer_size: int) -> list[list]:
+    def receive_packet(connection: socket, max_buffer_size: int) -> list[str]:
+        """
+        Description:
+            receive a packet from the client's connection. Process the packet
+            into a list.
+        :param:
+            connection (socket): connection with the client's socket.
+            max_buffer_size (int): (used mainly for debug).
+        :return:
+            packet (list[str]): [ip_src, ip_dst, payload, ttl].
+        """
         req = connection.makefile('rb', 0)
         packet_size = sys.getsizeof(req)
         if packet_size > max_buffer_size:
             print("The packet size is greater than expected", packet_size)
         decoded_packet = req.readline().decode('utf-8')
         packet = list(map(lambda x: x.strip(), decoded_packet.split(',')))
+        print(packet)
         return packet
     
     # --------------------------- #
