@@ -238,17 +238,30 @@ class Router():
     # --------------------------- #
 
     def load_router_table(self, path: str) -> None:
+        """ Load forwarding table (with range) into self.table """
         table = self.read_csv(path)
         self.table = self.generate_forwarding_table_with_range(table)
         return None
 
-    def generate_forwarding_table_with_range(self, table: list[list]) -> list[list]:
+    def generate_forwarding_table_with_range(self, table: list[str]) -> list[list]:
+        """
+        Description:
+            For each record in the forwarding table, find the ip range given
+            the binary representation of the network destination address and
+            netmask. Then, construct a new record in the form of:
+            '[ip_range (bin), netmask_bin (bin), host_ip (str), outgoing port (str)]'
+        :param:
+            table (list[str]): forwarding table given by router_#_table.csv.
+        :return:
+            new_table (list[list]): New forwarding table with an ip range and
+            a binary representation of netmask.
+        """
         new_table = []
-        for old_record in table:
-            network_dst_bin = self.ip_to_bin(old_record[0])
-            netmask_bin = self.ip_to_bin(old_record[1])
+        for record in table:
+            network_dst_bin = self.ip_to_bin(record[0])
+            netmask_bin = self.ip_to_bin(record[1])
             ip_range = self.find_ip_range(network_dst_bin, netmask_bin)
-            new_table.append([ip_range] + [netmask_bin] + old_record[2:])
+            new_table.append([ip_range] + [netmask_bin] + record[2:])
         return new_table
 
     def lpm(self, dest_ip: bin) -> str:
