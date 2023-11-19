@@ -310,9 +310,9 @@ class Router():
         """
         Convert an ip into a binary number with the following steps:
             1. split the string on '.'s
-            2. convert each string octlet into an integer then into binary.
+            2. convert each element of list into an integer then into binary.
             3. remove the 0b that python places infront of a binary number string.
-            4. fill in zeros to the right so that each octlets length is 8.
+            4. fill in zeros to the left so that each octlets length is 8.
             5. join the list of octlets into a string.
             6. tell python to intepret the string as an binary integer.
         :param:
