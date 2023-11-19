@@ -243,7 +243,7 @@ class Router():
         self.table = self.generate_forwarding_table_with_range(table)
         return None
 
-    def generate_forwarding_table_with_range(self, table: list[str]) -> list[list]:
+    def generate_forwarding_table_with_range(self, table: list[list]) -> list[list]:
         """
         Description:
             For each record in the forwarding table, find the ip range given
@@ -251,7 +251,7 @@ class Router():
             netmask. Then, construct a new record in the form of:
             '[ip_range (bin), netmask_bin (bin), host_ip (str), outgoing port (str)]'
         :param:
-            table (list[str]): forwarding table given by router_#_table.csv.
+            table (list[list]): forwarding table given by router_#_table.csv.
         :return:
             new_table (list[list]): New forwarding table with an ip range and
             a binary representation of netmask.
@@ -325,6 +325,7 @@ class Router():
     
     @staticmethod
     def bit_not(n: bin, numbits: int = 32) -> bin:
+        """ Flip 1's to 0's and 0's to 1's """
         return (1 << numbits) - 1 - n
     
     # --------------- #
@@ -333,6 +334,16 @@ class Router():
 
     @staticmethod
     def read_csv(path: str) -> list[list]:
+        """
+        Description:
+            Read a csv file line by line. For each line, split on the ','s.
+            Strip any leading or trailing newline or whitespace from each
+            element in the record. Append the record to the table.
+        :param:
+            path (str): path to csv file.
+        :return:
+            table (list[list]): a table of records (lists) made by the csv.
+        """
         table_file = open(path, 'r')
         table = table_file.readlines()
         table_list = []
