@@ -33,8 +33,8 @@ from router import Router
 # --------------------------------------------------------------------------- #
 # --------------------------------- Settings -------------------------------- #
 
-SECONDS_BETWEEN_PACKETS = 0.1
-DELETE_FILES_WHEN_FINISHED = True
+SECONDS_BETWEEN_PACKETS = 1
+DELETE_FILES_WHEN_FINISHED = False
 SECONDS_BEFORE_FILES_DELETED = 5
 
 # --------------------------------------------------------------------------- #
